@@ -1,0 +1,31 @@
+{
+  "name": "RRReader",
+  "description": "RRReader ==============",
+  "version": "0.0.1",
+  "main": "./RRReader.js",
+  "author": "sigi <you@email.example>",
+  "keywords": [],
+  "licenses": {
+    "type": "none"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/YOUR_LOGIN/RRReader.git"
+  },
+  "bugs": {
+    "url": "http://github.com/YOUR_LOGIN/RRReader/issues"
+  },
+  "homepage": "https://github.com/YOUR_LOGIN/RRReader",
+  "dependencies": {
+    "cheerio": "^0.16.0",
+    "ent": "^2.2.0",
+    "iconv-lite": "^0.2.11",
+    "node-uuid": "^1.4.1",
+    "request": "^2.36.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "license": "ISC"
+}
