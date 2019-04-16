@@ -1,17 +1,19 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-var RRAtomFeedFile = "/var/www/default/rrfeed/rrfeed.xml";
+const ATOM_FEED_FILE_PATH = "/var/www/default/rrfeed/rrfeed.xml";
 // var RRAtomFeedFile = "/tmp/rrfeed.xml";
-var RRJSONFeedDir = "/var/tmp/rrfeed";
-var RRJSONFeedFile = "rrfeed.json";
-var RRMaxEntries = 50;
+var FEED_ENTRIES_FOLDER = "/var/tmp/rrfeed";
+var FEED_ENTRIES_FILE = "rrfeed.json";
+const FEED_MAX_ENTRIES = 50;
 
+const GCP_PROJECT_ID = 'cloudstorage-test-237315';
+const GCP_KEY_FILENAME = 'cloudstorage-test-237315-0a2d840ab4d6.json';
+const {Datastore} = require('@google-cloud/datastore');
+const datastore = new Datastore({
+    projectId: GCP_PROJECT_ID,
+    keyFilename: GCP_KEY_FILENAME
+});
+// Creates a client
 
-var fs = require('fs'),
+const fs = require('fs'),
     cheerio = require('cheerio'),
     request = require('request'),
     // Iconv = require('iconv').Iconv,
@@ -19,21 +21,21 @@ var fs = require('fs'),
     entDecode = require('ent/decode'),
     nodeUuid = require('node-uuid');
     
-if(!fs.existsSync(RRJSONFeedDir)){
-    fs.mkdirSync(RRJSONFeedDir);
-    fs.writeFile(RRJSONFeedDir + '/README', "Sem se uklada aktualni verze RRFeedu. Do old adresare se ukladaji predesle verze\n");
-    if(!fs.existsSync(RRJSONFeedDir + '/old')){
-        fs.mkdirSync(RRJSONFeedDir + '/old');
-    }
-}
+// if(!fs.existsSync(FEED_ENTRIES_FOLDER)){
+//     fs.mkdirSync(FEED_ENTRIES_FOLDER);
+//     fs.writeFile(FEED_ENTRIES_FOLDER + '/README', "Sem se uklada aktualni verze RRFeedu. Do old adresare se ukladaji predesle verze\n");
+//     if(!fs.existsSync(FEED_ENTRIES_FOLDER + '/old')){
+//         fs.mkdirSync(FEED_ENTRIES_FOLDER + '/old');
+//     }
+// }
 
 var saveCurrentRRFile = function(RRFeedEntries){
     debugger;
-    var fileOut = RRJSONFeedDir + '/' + RRJSONFeedFile;
+    var fileOut = FEED_ENTRIES_FOLDER + '/' + FEED_ENTRIES_FILE;
     if(fs.existsSync(fileOut)){
         var mtime = fs.statSync(fileOut).mtime;
         var dateSuffix = mtime.getFullYear().toString() + (100 + mtime.getMonth() + 1).toString().substr(1) + (100 + mtime.getDate()).toString().substr(1);
-        var newFilename = RRJSONFeedDir + '/old/' + RRJSONFeedFile.substr(0, RRJSONFeedFile.length - 5) + '.' + dateSuffix + '.json';
+        var newFilename = FEED_ENTRIES_FOLDER + '/old/' + FEED_ENTRIES_FILE.substr(0, FEED_ENTRIES_FILE.length - 5) + '.' + dateSuffix + '.json';
         
         fs.renameSync(fileOut, newFilename);
     }
@@ -41,7 +43,7 @@ var saveCurrentRRFile = function(RRFeedEntries){
 }
 
 var loadCurrentRydloFile = function(){
-    var fileIn = RRJSONFeedDir + '/' + RRJSONFeedFile;
+    var fileIn = FEED_ENTRIES_FOLDER + '/' + FEED_ENTRIES_FILE;
     
     var RREntriesOut = [];
     if(fs.existsSync(fileIn)){
@@ -54,6 +56,7 @@ var loadCurrentRydloFile = function(){
     
     return RREntriesOut;
 }
+
 
 var reqOptions = {
     // url: 'http://www.pervers.cz/?Loc=fre&Forum=215906',
@@ -70,11 +73,13 @@ var reqOptions = {
     strictSSL : false
 };
 
+request.get(reqOptions, processResponseCallback);
 
-var processResponseCallback = function(err, response, body){
+function processResponseCallback(err, response, body){
+    console.log("processResponseCallback started");
     if(err) throw err;
     if(!response.statusCode === 200){
-        throw "processRoutesListCallback: Nedostal vraceny stauskod 200, to je zle"
+        throw new Error("processRoutesListCallback: Nedostal vraceny stauskod 200, to je zle");
     }
     debugger;
     body = new Buffer(body, 'binary');
@@ -84,11 +89,12 @@ var processResponseCallback = function(err, response, body){
     processBlogContent(body);
 }
 
-var processBlogContent = function(body){
+function processBlogContent(body){
     // console.log(body);
 //    var txt = iconv.decode(body, 'win1250');
 //    console.log(txt);
 
+    console.log("processBlogContent started");
     var blogPostsArray = [];
     var $ = cheerio.load(body.toString());
     $('#fre .it').each(function(idx, elem){
@@ -130,8 +136,9 @@ var processBlogContent = function(body){
     processBlogPosts(blogPostsArray);
 }
 
-var processBlogPosts = function(blogPostsArray){    
-    var currentRREntries = loadCurrentRydloFile();
+function processBlogPosts(blogPostsArray){    
+    console.log("processBlogPosts started");
+    var currentRREntries = loadCurrentRydloEntries();
     // console.log(currentRREntries);
     // produceAtomFeed(blogPostsArray);
     // var maxCurrRRDate = currentRREntries[0].date;
@@ -156,16 +163,24 @@ var processBlogPosts = function(blogPostsArray){
         currentRREntries = blogPostsArray;
         hasNewEntries = true;
     }
-    
+    // entries vypadaji nasledovne
+
+    // {
+    //     "date": "2019-04-13T14:30:00.000Z",
+    //     "author": "RITNE__RYDLO",
+    //     "text": "ihned som vedel o co ide.jeden mrtvak mal peknu kozenu bundu to som vedel pozeral som nanho v pripravni v truhle no bol taky velmi chudy smrdak a bolo mi jasne mi nebude mala uzke rukavy tym padom som vobec nezkusal.no ked bunda horela akosi sa spekla a vletel zvysok ziarom do komina aj z opecenu pazuru komin mal dobry tah aj sa tym upchal.no ten den zme paleli do polnoci bola fronta.vela zakaznikov.aj po dvoch.",
+    //     "UUID": "fa88a048-c8f9-4ded-b08c-c9bb33193c90"
+    //   },
+
     if(hasNewEntries){
-        currentRREntries.splice(RRMaxEntries);
+        currentRREntries.splice(FEED_MAX_ENTRIES);
         saveCurrentRRFile(currentRREntries);
         var xmlAtomFeed = produceAtomFeed(currentRREntries);
-        fs.writeFileSync(RRAtomFeedFile, xmlAtomFeed);
+        fs.writeFileSync(ATOM_FEED_FILE_PATH, xmlAtomFeed);
     }
 }
 
-var produceAtomFeed = function(blogPostsArray){
+function produceAtomFeed(blogPostsArray){
     var feedParts = [
       '<?xml version="1.0" encoding="UTF-8"?>' ,
       '<feed xmlns="http://www.w3.org/2005/Atom"' + "\n" +
@@ -200,4 +215,3 @@ var produceAtomFeed = function(blogPostsArray){
     return feedOut;
 }
 
-request.get(reqOptions, processResponseCallback);

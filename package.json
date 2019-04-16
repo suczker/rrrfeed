@@ -2,7 +2,6 @@
   "name": "RRReader",
   "description": "RRReader ==============",
   "version": "0.0.1",
-  "main": "./RRReader.js",
   "author": "sigi <you@email.example>",
   "keywords": [],
   "licenses": {
@@ -17,11 +16,12 @@
   },
   "homepage": "https://github.com/YOUR_LOGIN/RRReader",
   "dependencies": {
-    "cheerio": "^0.16.0",
+    "@google-cloud/datastore": "^3.1.2",
+    "cheerio": "^0.22.0",
     "ent": "^2.2.0",
-    "iconv-lite": "^0.2.11",
-    "node-uuid": "^1.4.1",
-    "request": "^2.36.0"
+    "iconv-lite": "^0.4.24",
+    "node-uuid": "^1.4.8",
+    "request": "^2.88.0"
   },
   "devDependencies": {},
   "scripts": {
