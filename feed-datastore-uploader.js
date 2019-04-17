@@ -4,6 +4,7 @@ const FEED_MAX_ENTRIES = 50;
 const GCP_PROJECT_ID = 'cloudstorage-test-237315';
 const GCP_KEY_FILENAME = 'cloudstorage-test-237315-0a2d840ab4d6.json';
 const {Datastore} = require('@google-cloud/datastore');
+const moment = require('moment-timezone');
 const datastore = new Datastore({
     projectId: GCP_PROJECT_ID,
     keyFilename: GCP_KEY_FILENAME
@@ -168,7 +169,7 @@ async function processBlogPosts(blogPostsArray){
     // console.log(blogPostsArray);
     for(let bIdx = blogPostsArray.length - 1; bIdx >= 0; --bIdx){
         let tmpEntry = blogPostsArray[bIdx];
-        console.log(tmpEntry.date, lastKnownDate, tmpEntry.date.toString(), lastKnownDate.toString(), tmpEntry.date.getTime(), lastKnownDate.getTime(), tmpEntry.date.getTime() > lastKnownDate.getTime());
+        // console.log(tmpEntry.date, lastKnownDate, tmpEntry.date.toString(), lastKnownDate.toString(), tmpEntry.date.getTime(), lastKnownDate.getTime(), tmpEntry.date.getTime() > lastKnownDate.getTime());
         if(tmpEntry.date > lastKnownDate){
             // pokud narazis na novejsi nez nejnovejsi datum, tak tam nasoupej vsechny nove prirustky
             // console.log("Od indexu " + bIdx + " jsou nove prispevky");
@@ -218,23 +219,28 @@ async function produceAtomFeed(){
       const {author, text, date} = fe;     
       blogPostsArray.push({ UUID : feUUID.name, author, text, date })
     });
-
+    const hoursSub = parseInt(moment.tz(blogPostsArray[0].date.toISOString(), 'Europe/Berlin').format().substr(19,3) , 10);
+    const updatedDate = new Date(blogPostsArray[0].date.getTime() - (hoursSub * 3600 * 1000));
     var feedParts = [
       '<?xml version="1.0" encoding="UTF-8"?>' ,
       '<feed xmlns="http://www.w3.org/2005/Atom"' + "\n" +
       ' xml:lang="cs"' + "\n" +
-      ' xml:base="http://31.31.76.60">' + "\n" +
-      '<id>http://31.31.76.60/rrfeed/rrfeed.xml</id>' + "\n" +
+      ' xml:base="https://feeds.feedburner.com">' + "\n" +
+      '<id>https://feeds.feedburner.com/RydloAtomFeed</id>' + "\n" +
       '<title>RR Atom Feed</title>' + "\n" + 
-      '<updated>' + blogPostsArray[0].date.toISOString() + '</updated>',
-      '<link href="http://www.pervers.cz/?Loc=fre&amp;Forum=215906&amp;S=0" />', 
+      '<updated>' + updatedDate.toISOString() + '</updated>',
+      '<link href="https://www.okoun.cz/boards/rrr_-_regulerni_ritne_rydlo" />', 
       '<link rel="self" href="/rrfeed/feed.xml" />'
     ];
-    
     for(var bIdx in blogPostsArray){
         var bPost = blogPostsArray[bIdx];
+        const hoursSub = parseInt(moment.tz(bPost.date.toISOString(), 'Europe/Berlin').format().substr(19,3) , 10);
+        
         var formatedDate = bPost.date.getFullYear() + '-' + (bPost.date.getMonth() + 101).toString().substr(1) + '-' + (bPost.date.getDate() + 100).toString().substr(1) 
                                 + ' ' + (bPost.date.getHours() + 100).toString().substr(1) + ':' + (bPost.date.getMinutes() + 100).toString().substr(1);
+        // console.log(`bPost.date before: ${bPost.date}`);
+        bPost.date = new Date(bPost.date.getTime() - (hoursSub * 3600 * 1000));
+        // console.log(`bPost.date after: ${bPost.date}`);
         var entry = "<entry>\n" + 
                     // "<id>http://www.pervers.cz/?Loc=fre&amp;Forum=215906&amp;S=" + bIdx + "</id>\n" +
                     "<id>" + bPost.UUID + "</id>\n" +
@@ -258,12 +264,12 @@ exports.scrapeNewFeedEntries = processFeedItemsFetch;
 
 if(require.main == module){
     (async () => {
-        await storeAllRRItems();
+        // await storeAllRRItems();
         // await getLatestTask();
         // const body = await scrapeFeedItems();
         // console.log(body);
         // const itemsFound = await processFeedItemsFetch();
         // console.log("Najdenych novych " + itemsFound);
-        // console.log(await produceAtomFeed());
+        console.log(await produceAtomFeed());
     })();
 }
