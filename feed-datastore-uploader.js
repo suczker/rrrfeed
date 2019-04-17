@@ -15,7 +15,8 @@ const cheerio = require('cheerio'),
     iconv = require('iconv-lite'),
     entDecode = require('ent/decode'),
     nodeUuid = require('node-uuid');
-
+// set the FTP credentials - see ftp-credentials-template.js for template
+const ftpCredentials = require('./ftp-credentials');
 const path = require('path');
 const FEED_FILE = 'feed-vsechno.json';
 
@@ -259,8 +260,58 @@ async function produceAtomFeed(){
     return feedOut;
 }
 
+async function uploadAllFeedItems2FTP(){
+    const query = datastore.createQuery ('RR', 'FeedItem')
+        .order('date',  { descending: true })
+        // .limit(10);
+    console.log(`Pred pustenim query: ${new Date()}`);
+    const [feedItems] = await datastore.runQuery(query);
+    console.log(`Po skonceni query: ${new Date()}`);
+
+    const blogPostsArray = [];
+    feedItems.forEach(fe => {
+        const feUUID = fe[datastore.KEY]; 
+        const {author, text} = fe;   
+        const hoursSub = parseInt(moment.tz(fe.date.toISOString(), 'Europe/Berlin').format().substr(19,3) , 10);
+        const date = new Date(fe.date.getTime() - (hoursSub * 3600 * 1000));
+        // console.log(hoursSub, fe.date.toISOString(), date.toISOString());
+        blogPostsArray.push({ UUID : feUUID.name, author, text, date });
+    });
+    const outJSON = JSON.stringify(blogPostsArray, null, 2);
+    const Readable = require('stream').Readable;
+    const streamOut = new Readable();
+    streamOut._read = () => {}; // redundant? see update below
+    streamOut.push(outJSON);
+    streamOut.push(null);
+    const ftp = require("basic-ftp");
+    // upload to FTP
+    const client = new ftp.Client()
+    client.ftp.verbose = true;
+    console.log(`Before FTP upload: ${new Date()}`);
+    // try {
+        await client.access(ftpCredentials);
+        // console.log(await client.list())
+        await client.upload(streamOut, "feed.json");
+        console.log(`After FTP upload: ${new Date()}`);
+// catch is performed and logged in the exported function
+ //   }
+ //   catch(err) {
+ //       console.log(err)
+ //   }
+    client.close();
+
+    // console.log(out);
+}
+
 exports.getAtomFeed = produceAtomFeed;
 exports.scrapeNewFeedEntries = processFeedItemsFetch;
+exports.uploadAllFeedItems2FTP = uploadAllFeedItems2FTP;
+
+function testSub(){
+    const winterDateISOStr = "2013-01-02T12:47:00.000Z";
+    const hoursSub = parseInt(moment.tz(winterDateISOStr, 'Europe/Berlin').format().substr(19,3) , 10);
+    console.log(winterDateISOStr, hoursSub);
+}
 
 if(require.main == module){
     (async () => {
@@ -270,6 +321,8 @@ if(require.main == module){
         // console.log(body);
         // const itemsFound = await processFeedItemsFetch();
         // console.log("Najdenych novych " + itemsFound);
-        console.log(await produceAtomFeed());
+        // console.log(await produceAtomFeed());
+        uploadAllFeedItems2FTP()
+        // testSub();
     })();
 }

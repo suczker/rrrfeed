@@ -1,4 +1,4 @@
-const {getAtomFeed, scrapeNewFeedEntries} = require('./feed-datastore-uploader');
+const {getAtomFeed, scrapeNewFeedEntries, uploadAllFeedItems2FTP} = require('./feed-datastore-uploader');
 const moment = require('moment-timezone');
 
 exports.getAtomFeed = async (req, res) => {
@@ -11,6 +11,18 @@ exports.scrapeNewFeedEntries = async (req, res) => {
     const newItemsFound = await scrapeNewFeedEntries();
     res.send(`Found ${newItemsFound} items`);
 }
+
+exports.uploadAllFeedItems2FTP = async (req, res) => {
+    try {
+        await uploadAllFeedItems2FTP();
+        res.send("Feed successfully uploaded to FTP");
+    }
+    catch(e){
+        console.error(e);
+        res.send(e);
+    }
+}
+
 
 exports.getTimeDiff = (req, res) => {
     const date = new Date();
