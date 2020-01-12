@@ -77,7 +77,8 @@ async function getLatestFeedItemDate(){
 async function scrapeFeedItems(){
     var reqOptions = {
         // url: 'http://www.pervers.cz/?Loc=fre&Forum=215906',
-        url : 'http://www.pervers.cz/diskuse/pervers/215906-som-v-amerike-a-riadne-jebem-',
+        // url : 'http://www.pervers.cz/diskuse/pervers/215906-som-v-amerike-a-riadne-jebem-',
+        url : 'https://www.pervers.cz/fre?Forum=222352',
         headers: {
             'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36',
             'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -94,7 +95,7 @@ async function scrapeFeedItems(){
         request.get(reqOptions, (err, res, body) => {
             if(err) return reject(err);
             if(!res.statusCode === 200){
-                reject(new Error("processRoutesListCallback: Nedostal vraceny stauskod 200, to je zle"));
+                reject(new Error("scrapeFeedItems: Nedostal vraceny stauskod 200, to je zle"));
             }
             resolve(body);
         });
@@ -121,6 +122,13 @@ async function processBlogContent(body){
     var $ = cheerio.load(body.toString());
     $('#fre .it').each(function(idx, elem){
         var userId = $(elem).find('a.gender_male, a.gender_female').text();
+        if(userId.length === 0){
+            userId = $(elem).find('.hdr strong').text();
+            if(userId.length === 0){
+                userId = "ANONYM";
+            }
+        }
+
         var sentDate = $(elem).find('.it_text .r').text();
         // console.log(sentDate);
         var dateMatch = sentDate.match(/(\d{2}).(\d{2}).(\d{4}) \[(\d{2}):(\d{2})\]/);
@@ -262,7 +270,7 @@ async function produceAtomFeed(){
 
 async function uploadAllFeedItems2FTP(){
     const query = datastore.createQuery ('RR', 'FeedItem')
-        .order('date',  { descending: true })
+        .order('date',  { descending: false })
         // .limit(10);
     console.log(`Pred pustenim query: ${new Date()}`);
     const [feedItems] = await datastore.runQuery(query);
@@ -315,14 +323,14 @@ function testSub(){
 
 if(require.main == module){
     (async () => {
-        // await storeAllRRItems();
+        await storeAllRRItems();
         // await getLatestTask();
         // const body = await scrapeFeedItems();
         // console.log(body);
         // const itemsFound = await processFeedItemsFetch();
         // console.log("Najdenych novych " + itemsFound);
         // console.log(await produceAtomFeed());
-        uploadAllFeedItems2FTP()
+        // uploadAllFeedItems2FTP()
         // testSub();
     })();
 }

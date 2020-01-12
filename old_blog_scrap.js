@@ -3,7 +3,8 @@
 'use strict';
 
 // const OLD_RR_FEED_START_URL =  'http://www.pervers.cz/fre?Forum=212796';
-const OLD_RR_FEED_START_URL =  'http://www.pervers.cz/fre?Forum=215906&S=2896';
+// const OLD_RR_FEED_START_URL =  'http://www.pervers.cz/fre?Forum=215906&S=2896';
+const OLD_RR_FEED_START_URL =  'https://www.pervers.cz/fre?Forum=222352';
 const fs = require('fs'),
     cheerio = require('cheerio'),
     request = require('request'),
@@ -50,7 +51,10 @@ function processBlogContent(body){
     $('#fre .it').each(function(idx, elem){
         var userId = $(elem).find('a.gender_male, a.gender_female').text();
         if(userId.length === 0){
-            userId = "RYTNE_RYDLO";
+            userId = $(elem).find('.hdr strong').text();
+            if(userId.length === 0){
+                userId = "ANONYM";
+            }
         }
         var sentDate = $(elem).find('.it_text .r').text();
         // console.log(sentDate);
@@ -86,17 +90,17 @@ function processBlogContent(body){
         // var text = $(elem).text();
     });
     
-    fs.writeFile("/tmp/oldfeed.json", JSON.stringify(extractedFeedItems, null, 2));
+    fs.writeFileSync("/tmp/oldfeed.json", JSON.stringify(extractedFeedItems, null, 2));
     // processBlogPosts(extractedFeedItems);
     let hrefElem = $('div.more a');
     if(hrefElem.length){
-        let newUrl = hrefElem.attr('href');
+        let newUrl = "https://www.pervers.cz" + hrefElem.attr('href');
         reqOptions.url = newUrl;
         console.log(newUrl);
         request.get(reqOptions, processPageCallback);                
     }
     else{
-        fs.writeFile("/tmp/newfeed.json", JSON.stringify(extractedFeedItems, null, 2));
+        fs.writeFileSync("/tmp/newfeed.json", JSON.stringify(extractedFeedItems, null, 2));
     }
 }
 

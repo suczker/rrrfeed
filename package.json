@@ -1,12 +1,12 @@
 {
-  "name": "RRReader",
+  "name": "rrr-reader",
   "description": "RRReader ==============",
   "version": "0.0.1",
-  "author": "sigi <you@email.example>",
+  "author": "suczker <you@email.example>",
   "keywords": [],
-  "licenses": {
-    "type": "none"
-  },
+  "licenses": [{ "type": "MIT"
+    , "url": "https://www.opensource.org/licenses/mit-license.php"
+    }], 
   "repository": {
     "type": "git",
     "url": "git://github.com/YOUR_LOGIN/RRReader.git"
@@ -28,6 +28,5 @@
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "license": "ISC"
+  }
 }
