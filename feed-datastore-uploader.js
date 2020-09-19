@@ -78,7 +78,8 @@ async function scrapeFeedItems(){
     var reqOptions = {
         // url: 'http://www.pervers.cz/?Loc=fre&Forum=215906',
         // url : 'http://www.pervers.cz/diskuse/pervers/215906-som-v-amerike-a-riadne-jebem-',
-        url : 'https://www.pervers.cz/fre?Forum=222352',
+        // url : 'https://www.pervers.cz/fre?Forum=222352',
+        url : 'https://www.pervers.cz/fre?Forum=222821', // since august 2020
         headers: {
             'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36',
             'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',

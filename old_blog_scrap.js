@@ -4,7 +4,9 @@
 
 // const OLD_RR_FEED_START_URL =  'http://www.pervers.cz/fre?Forum=212796';
 // const OLD_RR_FEED_START_URL =  'http://www.pervers.cz/fre?Forum=215906&S=2896';
-const OLD_RR_FEED_START_URL =  'https://www.pervers.cz/fre?Forum=222352';
+// const OLD_RR_FEED_START_URL =  'https://www.pervers.cz/fre?Forum=222352';
+const OLD_RR_FEED_START_URL =  'https://www.pervers.cz/fre?Forum=222821'; // since august 2020
+
 const fs = require('fs'),
     cheerio = require('cheerio'),
     request = require('request'),

@@ -5,7 +5,7 @@ This is rrr-reader.
 
 ## Steps to update the feeds when the feed is migrated somewhere else
 
-Change the url to correct one in `old_blog_scrap.js`
+Change the url to correct one in `old_blog_scrap.js` and run it.
 
 Then copy the resulting feed from `/tmp/newfeed.json` to `feed-vsechno.json` in current folder 
 

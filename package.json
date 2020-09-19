@@ -4,9 +4,12 @@
   "version": "0.0.1",
   "author": "suczker <you@email.example>",
   "keywords": [],
-  "licenses": [{ "type": "MIT"
-    , "url": "https://www.opensource.org/licenses/mit-license.php"
-    }], 
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://www.opensource.org/licenses/mit-license.php"
+    }
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/YOUR_LOGIN/RRReader.git"
@@ -17,7 +20,7 @@
   "homepage": "https://github.com/YOUR_LOGIN/RRReader",
   "dependencies": {
     "@google-cloud/datastore": "^3.1.2",
-    "basic-ftp": "^3.4.4",
+    "basic-ftp": "^3.8.7",
     "cheerio": "^0.22.0",
     "ent": "^2.2.0",
     "iconv-lite": "^0.4.24",

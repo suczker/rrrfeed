@@ -23,6 +23,13 @@ exports.uploadAllFeedItems2FTP = async (req, res) => {
     }
 }
 
+if(require.main == module) {
+  async function testUpload() {
+    await uploadAllFeedItems2FTP();
+  }
+
+  testUpload();
+}
 
 exports.getTimeDiff = (req, res) => {
     const date = new Date();
